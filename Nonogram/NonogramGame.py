@@ -16,7 +16,6 @@ class NonogramGame:
             self.indication_colonnes = list()
         else:
             self.indication_colonnes = indication_colonnes
-        self.ligne_max_atteinte = 0
 
     def saisie_indications(self):
         for i in range(self.largeur):
@@ -100,23 +99,16 @@ class NonogramGame:
         if colonne >= self.largeur:
             colonne = 0
             ligne += 1
-            if ligne > self.ligne_max_atteinte:
-                print(f"On a atteint au max la ligne {ligne}")
-                self.ligne_max_atteinte = ligne
             nbr_indices_utilises = 0
             case_vide = False
         return ligne, colonne, case_a_remplir, nbr_indices_utilises, case_vide
 
     def resolution(self, ligne=0, colonne=0, case_a_remplir=0, nbr_indices_utilises=0, case_vide=False):
         if ligne >= self.hauteur:
-            print("Réussie ?")
             return True
         liste_coup = self.coup_possibles(ligne, colonne, case_a_remplir, nbr_indices_utilises, case_vide)
         for coup in liste_coup:
-            # print(f"Ligne: {ligne}, Colonne: {colonne}, Case_a_remplir: {case_a_remplir}, Nbr_indices_utilise: "
-            #       f"{nbr_indices_utilises}, Case_vide: {case_vide}, Coup: {coup}, liste_coup: {liste_coup}")
             nligne, ncolonne, ncase_a_remplir, nnbr_indices_utilises, ncase_vide = self.result(ligne, colonne, case_a_remplir, nbr_indices_utilises, case_vide, coup)
-            # print(self.table)
             if self.resolution(nligne, ncolonne, ncase_a_remplir, nnbr_indices_utilises, ncase_vide):
                 return True
         self.table[ligne, colonne] = 0
@@ -149,18 +141,6 @@ class NonogramGame:
                 if i == self.hauteur - 1 and nbr_pixels != 0:
                     self.indication_colonnes[colonne].append(nbr_pixels)
 
-    def dessiner(self):
-        fenetre = FenetreNonogram(self.largeur, self.hauteur)
-        fenetre.entrer()
-        self.table = np.array(fenetre.getGrid())
-        print(self.table)
-
-    def editer(self):
-        fenetre = FenetreNonogram(self.largeur, self.hauteur, self.table)
-        fenetre.entrer()
-        self.table = np.array(fenetre.getGrid())
-        print(self.table)
-
     def afficher(self):
         plt.imshow(self.table)
         plt.show()
@@ -172,9 +152,18 @@ class NonogramGame:
     def import_indications(self, indication_lignes, indication_colonnes):
         self.indication_lignes = indication_lignes
         self.indication_colonnes = indication_colonnes
-        self.largeur = len(self.indication_colonnes)  # = nombre de colonne
-        self.hauteur = len(self.indication_lignes)  # = nombre de ligne
-        self.table = np.zeros((self.hauteur, self.largeur), dtype=int)
+        largeur = len(self.indication_colonnes)
+        hauteur = len(self.indication_lignes)
+        if largeur < self.largeur:
+            self.table = self.table[:, :largeur]
+        else:
+            self.table = np.concatenate((self.table, np.zeros((self.hauteur, largeur - self.largeur), dtype=int)), axis=1)
+        self.largeur = largeur  # = nombre de colonne
+        if hauteur < self.hauteur:
+            self.table = self.table[:self.hauteur, :]
+        else:
+            self.table = np.concatenate((self.table, np.zeros((hauteur-self.hauteur, self.largeur), dtype=int)))
+        self.hauteur = hauteur  # = nombre de ligne
 
     def export_board(self):
         return self.table

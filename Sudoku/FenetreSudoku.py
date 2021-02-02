@@ -28,7 +28,7 @@ class FenetreSudoku:
                 if board[i, j] != 0:
                     self.entree[i][j].insert(0, str(board[i, j]))
                     if play:
-                        self.entree[i][j]["state"]="disabled"
+                        self.entree[i][j]["state"] = "disabled"
                 grid_i = i
                 grid_j = j
                 if i > 2:
